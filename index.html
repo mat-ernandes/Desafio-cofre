@@ -1,0 +1,1010 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>O código impossível</title>
+<meta name="description" content="Desafio interativo do cofre para explorar a Zona de Desenvolvimento Proximal de Vygotsky.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:ital,wght@0,400;0,700;1,400&family=Baloo+2:wght@500;600;700;800&display=swap" rel="stylesheet">
+<script>
+  const CONFIG = {
+    URL_PLANILHA: ''
+  };
+</script>
+<style>
+:root{
+  color-scheme: light;
+  --bg:#E4ECEE;
+  --bg-dot:#cfdcdf;
+  --paper:#FFFDF7;
+  --ink:#14262E;
+  --muted:#4E6670;
+  --line:#c3d2d6;
+  --steel:#2C5566;
+  --steel-2:#3B6C80;
+  --steel-dark:#1B3A47;
+  --steel-deep:#10262F;
+  --brass:#E3A62F;
+  --brass-light:#F6D27A;
+  --brass-dark:#A8741A;
+  --ok:#2F9B6A;
+  --ok-soft:#DDF1E7;
+  --erro:#D9573F;
+  --erro-soft:#FBE3DD;
+  --mediacao:#E3A62F;
+  --mediacao-soft:#FBF0D6;
+  --display:'Baloo 2', 'Trebuchet MS', system-ui, sans-serif;
+  --body:'Atkinson Hyperlegible', 'Segoe UI', system-ui, sans-serif;
+  --r-sm:10px; --r-md:16px; --r-lg:26px;
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{
+  margin:0; background:var(--bg); color:var(--ink);
+  font-family:var(--body); font-size:18px; line-height:1.55;
+  background-image:radial-gradient(var(--bg-dot) 1.2px, transparent 1.2px);
+  background-size:22px 22px;
+  min-height:100vh;
+}
+h1,h2,h3{font-family:var(--display); line-height:1.1; margin:0; letter-spacing:-.01em}
+p{margin:0 0 .9em}
+button{font:inherit; cursor:pointer}
+:focus-visible{outline:3px solid var(--brass); outline-offset:3px; border-radius:6px}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+
+/* ---------- topo e etapas ---------- */
+.topo{
+  max-width:1180px; margin:0 auto; padding:22px 24px 0;
+  display:flex; align-items:center; justify-content:space-between; gap:20px; flex-wrap:wrap;
+}
+.marca{font-family:var(--display); font-weight:800; font-size:1.25rem; display:flex; align-items:center; gap:10px; color:var(--steel-dark)}
+.marca svg{flex:none}
+.etapas{display:flex; gap:6px; list-style:none; margin:0; padding:0; flex-wrap:wrap}
+.etapas li{
+  display:flex; align-items:center; gap:8px; padding:6px 14px 6px 6px;
+  border-radius:999px; font-size:.88rem; color:var(--muted); background:transparent;
+}
+.etapas li .n{
+  width:26px; height:26px; border-radius:50%; display:grid; place-items:center;
+  font-family:var(--display); font-weight:700; font-size:.9rem;
+  border:2px solid var(--line); background:var(--paper);
+}
+.etapas li.atual{background:var(--paper); color:var(--ink); box-shadow:0 1px 0 var(--line)}
+.etapas li.atual .n{border-color:var(--brass); background:var(--brass); color:var(--steel-deep)}
+.etapas li.feita .n{border-color:var(--steel); background:var(--steel); color:#fff}
+
+main{max-width:1180px; margin:0 auto; padding:26px 24px 80px}
+.tela{display:none}
+.tela.ativa{display:block; animation:entra .45s ease both}
+@keyframes entra{from{opacity:0; transform:translateY(8px)}to{opacity:1; transform:none}}
+
+.botao{
+  display:inline-flex; align-items:center; gap:10px; border:0; border-radius:999px;
+  padding:13px 26px; font-family:var(--display); font-weight:700; font-size:1.1rem;
+  background:var(--steel-dark); color:#fff; box-shadow:0 4px 0 var(--steel-deep);
+  transition:transform .08s, box-shadow .08s, background .15s;
+}
+.botao:hover{background:var(--steel)}
+.botao:active{transform:translateY(3px); box-shadow:0 1px 0 var(--steel-deep)}
+.botao.latao{background:var(--brass); color:var(--steel-deep); box-shadow:0 4px 0 var(--brass-dark)}
+.botao.latao:hover{background:var(--brass-light)}
+.botao.latao:active{box-shadow:0 1px 0 var(--brass-dark)}
+.botao.leve{background:var(--paper); color:var(--steel-dark); box-shadow:0 3px 0 var(--line); border:2px solid var(--line)}
+.botao.leve:hover{background:#fff}
+.botao[disabled]{opacity:.45; cursor:not-allowed}
+.link{background:none;border:0;padding:0;color:var(--steel);text-decoration:underline;text-underline-offset:3px;font-size:.95rem}
+
+/* ---------- tela inicial ---------- */
+.hero{
+  display:grid; grid-template-columns:minmax(0,1.15fr) minmax(0,.85fr); gap:56px; align-items:center;
+  padding:30px 0 50px;
+}
+.hero h1{font-size:clamp(2.8rem,6vw,4.6rem); font-weight:800; color:var(--steel-deep)}
+.hero .linha-fina{font-family:var(--display); font-size:1.6rem; font-weight:600; color:var(--steel); margin:6px 0 20px}
+.hero p.lead{font-size:1.15rem; max-width:34em; color:var(--ink)}
+.hero .acoes{display:flex; gap:14px; align-items:center; margin-top:26px; flex-wrap:wrap}
+.hero .acoes small{color:var(--muted)}
+
+.retrato{position:relative; justify-self:center; width:min(100%,360px)}
+.retrato figure{
+  margin:0; background:var(--paper); padding:16px 16px 18px; border-radius:6px;
+  transform:rotate(2.2deg); box-shadow:0 18px 40px -18px rgba(16,38,47,.55), 0 2px 0 var(--line);
+}
+.retrato .foto{
+  aspect-ratio:4/5; background:#cfd8d6; overflow:hidden; border-radius:2px; position:relative;
+  display:grid; place-items:center;
+}
+.retrato img{width:100%; height:100%; object-fit:cover; filter:grayscale(1) contrast(1.05) sepia(.18); display:block}
+.retrato .sem-foto{
+  text-align:center; padding:20px; color:var(--muted); font-size:.92rem; line-height:1.4;
+}
+.retrato .sem-foto strong{display:block; font-family:var(--display); font-size:3.6rem; color:#b3c1c0; line-height:1}
+.retrato figcaption{font-family:var(--display); font-weight:600; font-size:1.15rem; margin-top:12px; color:var(--steel-deep)}
+.retrato figcaption span{display:block; font-family:var(--body); font-weight:400; font-size:.88rem; color:var(--muted)}
+.retrato .fita{
+  position:absolute; top:-12px; left:50%; width:110px; height:28px; margin-left:-55px;
+  background:rgba(227,166,47,.55); transform:rotate(-3deg); border-radius:2px;
+}
+
+.bloco{background:var(--paper); border-radius:var(--r-lg); padding:40px 44px; margin-top:26px; box-shadow:0 2px 0 var(--line)}
+.bloco h2{font-size:2rem; color:var(--steel-deep); margin-bottom:14px}
+.bloco .texto{max-width:62ch}
+.bloco .ref{font-size:.85rem; color:var(--muted)}
+
+/* diagrama da ZDP */
+.zdp{margin:30px 0 28px}
+.zdp-faixas{display:grid; grid-template-columns:1fr 1.25fr 1fr; border-radius:var(--r-md); overflow:hidden; border:2px solid var(--steel-dark)}
+.zdp-faixas > div{padding:22px 20px 20px; min-height:170px; display:flex; flex-direction:column; gap:6px}
+.zdp-faixas h3{font-size:1.25rem}
+.zdp-faixas p{font-size:.95rem; margin:0}
+.zdp-faixas .q{font-family:var(--display); font-weight:600; font-size:1.05rem; margin-top:auto; padding-top:10px}
+.f-real{background:var(--steel-dark); color:#fff}
+.f-real .q{color:var(--brass-light)}
+.f-zdp{background:var(--brass); color:var(--steel-deep); position:relative}
+.f-zdp::before,.f-zdp::after{content:""; position:absolute; top:0; bottom:0; width:0; border-left:3px dashed var(--steel-deep); opacity:.55}
+.f-zdp::before{left:0}.f-zdp::after{right:0}
+.f-alem{background:repeating-linear-gradient(135deg,#eef2f2 0 12px,#e3e9ea 12px 24px); color:var(--muted)}
+.zdp-eixo{display:flex; justify-content:space-between; font-size:.85rem; color:var(--muted); margin-top:10px; padding:0 4px}
+.zdp-eixo span:nth-child(2){color:var(--brass-dark); font-weight:700}
+
+.passos{display:grid; grid-template-columns:repeat(3,1fr); gap:20px; margin-top:22px; counter-reset:p}
+.passo{border-top:3px solid var(--steel-dark); padding-top:14px}
+.passo h3{font-size:1.2rem; display:flex; gap:10px; align-items:baseline}
+.passo h3::before{counter-increment:p; content:counter(p); font-size:2rem; color:var(--brass-dark); font-weight:800; line-height:1}
+.passo p{font-size:.97rem; color:var(--muted); margin:.4em 0 0}
+.regras{margin-top:26px; padding:16px 20px; border-radius:var(--r-md); background:#EEF4F5; font-size:.98rem}
+
+/* ---------- tela do cofre ---------- */
+.cab-cofre{display:flex; justify-content:space-between; align-items:flex-end; gap:24px; flex-wrap:wrap; margin-bottom:24px}
+.cab-cofre h1{font-size:clamp(2rem,4vw,2.9rem); color:var(--steel-deep); font-weight:800}
+.cab-cofre p{margin:6px 0 0; color:var(--muted); max-width:48ch}
+.contador{font-family:var(--display); font-weight:700; color:var(--steel); background:var(--paper); padding:8px 16px; border-radius:999px; box-shadow:0 2px 0 var(--line); white-space:nowrap}
+
+.mesa{display:grid; grid-template-columns:minmax(330px,420px) minmax(0,1fr); gap:40px; align-items:start}
+.coluna-cofre{position:sticky; top:16px}
+
+/* o cofre */
+.cofre{position:relative; width:100%; aspect-ratio:1/1.08; perspective:1400px; user-select:none}
+.cofre .corpo{
+  position:absolute; inset:0; border-radius:30px;
+  background:linear-gradient(160deg,var(--steel-2),var(--steel-dark) 60%,var(--steel-deep));
+  box-shadow:0 30px 50px -25px rgba(16,38,47,.7), inset 0 2px 0 rgba(255,255,255,.18);
+}
+.cofre .pe{position:absolute; bottom:-12px; width:56px; height:16px; background:var(--steel-deep); border-radius:0 0 8px 8px}
+.cofre .pe.e{left:34px}.cofre .pe.d{right:34px}
+.cofre .interior{
+  position:absolute; inset:20px; border-radius:20px; overflow:hidden;
+  background:radial-gradient(circle at 50% 45%, #3a2d0d 0, #1a1406 55%, #0c0a04 100%);
+  display:grid; place-items:center; text-align:center; padding:20px;
+  box-shadow:inset 0 0 40px rgba(0,0,0,.8);
+}
+.interior .brilho{position:absolute; inset:0; background:radial-gradient(circle at 50% 50%, rgba(246,210,122,.45), transparent 60%); opacity:0; transition:opacity 1s .6s}
+.cofre.aberto .interior .brilho{opacity:1}
+.interior .premio{position:relative; color:var(--brass-light); opacity:0; transform:scale(.85); transition:all .7s .9s}
+.cofre.aberto .interior .premio{opacity:1; transform:none}
+.premio .codigo{font-family:var(--display); font-weight:800; font-size:4rem; letter-spacing:.12em; line-height:1}
+.premio .rotulo{font-size:.95rem; color:#f3e4bd}
+
+.cofre .porta{
+  position:absolute; inset:14px; border-radius:22px; transform-origin:0 50%;
+  transition:transform 1.3s cubic-bezier(.55,-0.2,.25,1);
+  transform-style:preserve-3d;
+  background:linear-gradient(150deg,#4a7f93 0%,var(--steel) 35%,var(--steel-dark) 100%);
+  box-shadow:inset 0 0 0 6px rgba(0,0,0,.12), inset 0 3px 0 rgba(255,255,255,.22), 0 6px 12px rgba(0,0,0,.25);
+  display:flex; flex-direction:column; align-items:center; justify-content:space-between; padding:26px 22px 30px;
+}
+.cofre.aberto .porta{transform:rotateY(-108deg)}
+.porta > *{transition:opacity .25s .35s}
+.cofre.aberto .porta > *{opacity:0}
+.porta .dobradica{position:absolute; left:-10px; width:16px; height:54px; border-radius:6px; background:linear-gradient(90deg,#0e2129,#36606f); }
+.porta .dobradica.a{top:16%}.porta .dobradica.b{bottom:16%}
+.rebite{position:absolute; width:10px; height:10px; border-radius:50%; background:radial-gradient(circle at 35% 35%, #9fc0cc, #2a4d5b)}
+.rebite.r1{top:12px;left:12px}.rebite.r2{top:12px;right:12px}.rebite.r3{bottom:12px;left:12px}.rebite.r4{bottom:12px;right:12px}
+.placa{
+  font-family:var(--display); font-weight:800; font-size:1rem; letter-spacing:.06em;
+  color:var(--steel-deep); background:linear-gradient(180deg,var(--brass-light),var(--brass) 60%,var(--brass-dark));
+  padding:3px 16px 1px; border-radius:6px; box-shadow:0 2px 0 rgba(0,0,0,.3);
+}
+.rodas{display:flex; gap:10px; justify-content:center}
+.roda{display:flex; flex-direction:column; align-items:center; gap:4px}
+.roda button.seta{
+  width:52px; height:28px; border:0; border-radius:8px; background:rgba(0,0,0,.22); color:#cfe2e8;
+  display:grid; place-items:center; transition:background .15s;
+}
+.roda button.seta:hover{background:rgba(0,0,0,.4); color:#fff}
+.janela{
+  width:62px; height:82px; border-radius:12px; position:relative; overflow:hidden;
+  background:linear-gradient(180deg,#d7cfb8 0%,#fffaf0 30%,#fffaf0 70%,#d7cfb8 100%);
+  border:4px solid var(--brass); box-shadow:inset 0 3px 8px rgba(0,0,0,.35), 0 2px 0 var(--brass-dark);
+  display:grid; place-items:center; outline:none; cursor:ns-resize;
+}
+.janela:focus-visible{border-color:#fff; box-shadow:0 0 0 3px var(--brass), inset 0 3px 8px rgba(0,0,0,.35)}
+.janela .dig{font-family:var(--display); font-weight:800; font-size:3rem; color:var(--steel-deep); line-height:1; transition:transform .18s}
+.janela .dig.vazio{color:#c4bba3}
+.janela .dig.gira{animation:gira .22s ease}
+@keyframes gira{0%{transform:translateY(-60%); opacity:.2}100%{transform:none; opacity:1}}
+
+.manivela{
+  width:110px; height:110px; border-radius:50%; position:relative;
+  background:radial-gradient(circle, var(--brass-light) 0 14px, var(--brass-dark) 15px 18px, transparent 19px),
+             radial-gradient(circle, transparent 0 44px, var(--brass) 45px 50px, var(--brass-dark) 51px 53px, transparent 54px);
+  transition:transform .9s cubic-bezier(.3,1.4,.5,1);
+}
+.manivela i{position:absolute; left:50%; top:50%; width:8px; height:94px; margin:-47px 0 0 -4px; background:linear-gradient(90deg,var(--brass-dark),var(--brass-light),var(--brass-dark)); border-radius:4px}
+.manivela i:nth-child(2){transform:rotate(60deg)}.manivela i:nth-child(3){transform:rotate(120deg)}
+.manivela b{position:absolute; width:16px; height:16px; border-radius:50%; background:var(--brass-light); box-shadow:0 0 0 2px var(--brass-dark)}
+.cofre.girando .manivela{transform:rotate(300deg)}
+.cofre.tranco .manivela{animation:tranco .5s ease}
+@keyframes tranco{0%,100%{transform:rotate(0)}30%{transform:rotate(-28deg)}60%{transform:rotate(12deg)}}
+.cofre.tranco .porta{animation:treme .45s ease}
+@keyframes treme{0%,100%{transform:translateX(0)}20%{transform:translateX(-7px)}40%{transform:translateX(6px)}60%{transform:translateX(-4px)}80%{transform:translateX(2px)}}
+
+.controles{margin-top:28px; display:flex; flex-direction:column; gap:12px; align-items:stretch}
+.controles .botao{justify-content:center}
+.aviso{min-height:3.2em; font-size:.97rem; padding:10px 14px; border-radius:var(--r-sm); display:none}
+.aviso.on{display:block}
+.aviso.erro{background:var(--erro-soft); color:#7a2717}
+.aviso.info{background:#EEF4F5; color:var(--steel-dark)}
+.atalho{font-size:.85rem; color:var(--muted); text-align:center; margin:0}
+
+/* pistas */
+.painel{background:var(--paper); border-radius:var(--r-lg); padding:28px 30px; box-shadow:0 2px 0 var(--line)}
+.painel + .painel{margin-top:22px}
+.painel h2{font-size:1.5rem; color:var(--steel-deep); margin-bottom:4px}
+.painel .sub{color:var(--muted); font-size:.95rem; margin-bottom:16px}
+.pistas{list-style:none; margin:0; padding:0; display:flex; flex-direction:column; gap:8px}
+.pista{
+  display:grid; grid-template-columns:auto 64px 1fr; gap:18px; align-items:center;
+  padding:10px 14px; border-radius:var(--r-md); border:2px solid transparent; transition:background .3s, border-color .3s;
+}
+.pista:nth-child(odd){background:#F3F6F5}
+.pista.destaque{background:var(--mediacao-soft); border-color:var(--brass)}
+.tent{display:flex; gap:5px}
+.tent span{
+  width:38px; height:44px; border-radius:8px; display:grid; place-items:center;
+  font-family:var(--display); font-weight:800; font-size:1.55rem; color:var(--steel-deep);
+  background:#fff; border:2px solid var(--line);
+}
+.tent span.riscado{color:#b9c4c6; text-decoration:line-through; text-decoration-thickness:3px; text-decoration-color:var(--erro)}
+.tent span.confirmado{border-color:var(--ok); background:var(--ok-soft)}
+.pinos{display:flex; gap:5px; flex-wrap:wrap}
+.pino{width:16px; height:16px; border-radius:50%}
+.pino.certo{background:var(--brass); box-shadow:0 0 0 2px var(--brass-dark)}
+.pino.lugar{background:transparent; box-shadow:inset 0 0 0 3px var(--steel)}
+.pista .txt{font-size:.98rem}
+.legenda{display:flex; gap:20px; flex-wrap:wrap; font-size:.85rem; color:var(--muted); margin-top:14px}
+.legenda span{display:inline-flex; align-items:center; gap:7px}
+
+/* rascunho */
+.rascunho{display:grid; grid-template-columns:repeat(10,minmax(0,1fr)); gap:6px}
+.rascunho button{
+  aspect-ratio:1/1.15; border-radius:10px; border:2px solid var(--line); background:#fff;
+  font-family:var(--display); font-weight:800; font-size:1.4rem; color:var(--steel-deep); position:relative;
+}
+.rascunho button[data-e="fora"]{color:#b9c4c6; background:#F3F6F5}
+.rascunho button[data-e="fora"]::after{content:""; position:absolute; left:18%; right:18%; top:50%; height:3px; background:var(--erro); transform:rotate(-35deg); border-radius:2px}
+.rascunho button[data-e="dentro"]{border-color:var(--ok); background:var(--ok-soft); color:#1c5e40}
+
+/* mediação */
+.mediacao{border-left:6px solid var(--brass)}
+.orientacoes{list-style:none; margin:0 0 16px; padding:0; display:flex; flex-direction:column; gap:12px}
+.orientacao{background:var(--mediacao-soft); border-radius:var(--r-md); padding:14px 18px; animation:entra .4s ease both}
+.orientacao strong{font-family:var(--display); font-size:1.1rem; display:block; color:var(--brass-dark)}
+.orientacao p{margin:.2em 0 0; font-size:.98rem}
+.solucao{background:#EEF4F5; border-radius:var(--r-md); padding:18px 22px; margin-bottom:16px; animation:entra .4s ease both}
+.solucao h3{font-size:1.25rem; color:var(--steel-deep); margin-bottom:8px}
+.solucao ol{margin:0; padding-left:1.3em}
+.solucao li{margin-bottom:.55em; font-size:.97rem}
+.acoes-med{display:flex; gap:12px; flex-wrap:wrap; align-items:center}
+
+/* ---------- resultado / transição ---------- */
+.resultado{max-width:820px; margin:10px auto 0; text-align:center}
+.selo{
+  width:130px; height:130px; border-radius:50%; margin:0 auto 22px; display:grid; place-items:center;
+  font-family:var(--display); font-weight:800; font-size:2.2rem; color:var(--steel-deep);
+  background:radial-gradient(circle, var(--brass-light) 0 52%, var(--brass) 53% 64%, var(--brass-dark) 65% 68%, var(--brass) 69%);
+  box-shadow:0 10px 24px -10px rgba(168,116,26,.8);
+}
+.resultado h1{font-size:clamp(2.2rem,5vw,3.4rem); color:var(--steel-deep); font-weight:800}
+.resultado .msg{font-size:1.15rem; margin:16px auto 0; max-width:40em}
+.resultado .explica{font-size:.98rem; color:var(--muted); margin-top:10px}
+.escolha{display:grid; grid-template-columns:1fr 1fr; gap:20px; margin-top:34px; text-align:left}
+.escolha .op{background:var(--paper); border-radius:var(--r-lg); padding:26px 28px; box-shadow:0 2px 0 var(--line); display:flex; flex-direction:column; gap:10px}
+.escolha .op.principal{background:var(--steel-dark); color:#fff; box-shadow:0 2px 0 var(--steel-deep)}
+.escolha .op h2{font-size:1.45rem}
+.escolha .op p{margin:0; font-size:.98rem}
+.escolha .op.principal p{color:#cfe2e8}
+.escolha .op .botao{margin-top:auto; align-self:flex-start}
+
+/* ---------- final ---------- */
+.final h1{font-size:clamp(2.2rem,5vw,3.2rem); color:var(--steel-deep); font-weight:800}
+.trajeto{display:grid; grid-template-columns:repeat(3,1fr); gap:0; margin:26px 0 8px; border-radius:var(--r-lg); overflow:hidden; box-shadow:0 2px 0 var(--line)}
+.trajeto > div{background:var(--paper); padding:22px 24px; border-right:2px dashed var(--line)}
+.trajeto > div:last-child{border-right:0}
+.trajeto .t{font-size:.85rem; color:var(--muted)}
+.trajeto h3{font-size:1.3rem; color:var(--steel-deep); margin:2px 0 8px}
+.trajeto .v{font-family:var(--display); font-weight:700; font-size:1.15rem; display:inline-block; padding:2px 12px; border-radius:999px}
+.v.resolveu{background:var(--ok-soft); color:#1c5e40}
+.v.sozinho{background:#EEF4F5; color:var(--steel-dark)}
+.v.com_orientacao{background:var(--mediacao-soft); color:#7a5210}
+.v.viu_solucao,.v.desistiu{background:var(--erro-soft); color:#7a2717}
+.v.nao_fez{background:#EEF4F5; color:var(--muted)}
+.trajeto p{font-size:.92rem; color:var(--muted); margin:.6em 0 0}
+
+.resultado-turma{max-width:680px; margin:32px auto 0}
+.reflexao{background:var(--steel-dark); color:#fff; border-radius:var(--r-lg); padding:30px 32px}
+.reflexao h2{font-size:1.6rem; color:var(--brass-light); margin-bottom:12px}
+.reflexao ol{padding-left:1.2em; margin:0 0 18px}
+.reflexao li{margin-bottom:.6em}
+.reflexao p{color:#cfe2e8; font-size:.97rem}
+.resumo-box{background:rgba(0,0,0,.25); border-radius:var(--r-md); padding:14px 16px; font-size:.9rem; color:#e6f0f2; white-space:pre-line; margin-bottom:14px}
+
+/* gráfico */
+.grafico h2{font-size:1.5rem; color:var(--steel-deep)}
+.grafico .sub{color:var(--muted); font-size:.92rem; margin:4px 0 18px}
+.g-grupo{margin-bottom:22px}
+.g-grupo h3{font-size:1.1rem; color:var(--steel-dark); margin-bottom:10px}
+.g-linha{display:grid; grid-template-columns:200px 1fr 70px; gap:12px; align-items:center; margin-bottom:8px; font-size:.93rem}
+.g-trilho{display:block; height:26px; background:#EEF2F2; border-radius:6px; overflow:hidden}
+.g-barra{display:block; height:100%; border-radius:6px; width:0; transition:width .9s cubic-bezier(.2,.8,.2,1)}
+.g-barra.resolveu{background:var(--ok)}
+.g-barra.sozinho{background:#A9BCC2}
+.g-linha.sozinho{color:var(--muted)}
+.g-linha.com_orientacao{font-weight:700; font-size:1.05rem; color:var(--ink); background:var(--mediacao-soft); margin:0 -12px 10px; padding:8px 12px; border-radius:var(--r-sm)}
+.g-linha.com_orientacao .g-trilho{height:34px; background:#fff}
+.g-linha.com_orientacao .g-num{font-size:1.2rem; color:var(--brass-dark)}
+.g-barra.com_orientacao{background:var(--brass)}
+.g-barra.viu_solucao,.g-barra.desistiu{background:var(--erro)}
+.g-num{font-family:var(--display); font-weight:700; color:var(--steel-dark); text-align:right}
+.g-destaque{background:var(--mediacao-soft); border-radius:var(--r-md); padding:14px 18px; font-size:.98rem}
+.g-destaque strong{font-family:var(--display); font-size:1.4rem; color:var(--brass-dark)}
+.g-aviso{font-size:.85rem; color:var(--muted); margin-top:12px}
+.selo-exemplo{display:inline-block; background:var(--erro-soft); color:#7a2717; font-size:.8rem; padding:2px 10px; border-radius:999px; margin-left:8px; vertical-align:middle}
+
+/* painel da professora */
+.modo-painel .topo .etapas{display:none}
+.painel-prof{max-width:980px; margin:0 auto}
+.painel-prof h1{font-size:clamp(2.2rem,5vw,3.4rem); color:var(--steel-deep); font-weight:800; margin-bottom:6px}
+.painel-prof .grafico{background:var(--paper); border-radius:var(--r-lg); padding:34px 38px; margin-top:22px; box-shadow:0 2px 0 var(--line)}
+.painel-prof .g-linha{grid-template-columns:240px 1fr 90px; font-size:1.05rem}
+.painel-prof .g-trilho{height:36px}
+
+footer{max-width:1180px; margin:0 auto; padding:0 24px 40px; font-size:.82rem; color:var(--muted)}
+
+@media (max-width: 920px){
+  .hero{grid-template-columns:1fr; gap:34px}
+  .mesa{grid-template-columns:minmax(0,1fr)}
+  .coluna-cofre{position:static; max-width:420px; margin:0 auto; width:100%}
+  .escolha{grid-template-columns:1fr}
+  .passos{grid-template-columns:1fr}
+}
+@media (max-width: 640px){
+  body{font-size:17px}
+  .bloco{padding:26px 20px}
+  .zdp-faixas{grid-template-columns:1fr}
+  .zdp-faixas > div{min-height:0}
+  .f-zdp::before,.f-zdp::after{display:none}
+  .trajeto{grid-template-columns:1fr}
+  .trajeto > div{border-right:0; border-bottom:2px dashed var(--line)}
+  .pista{grid-template-columns:1fr; gap:8px}
+  .rodas{gap:6px}
+  .rascunho{grid-template-columns:repeat(5,minmax(0,1fr))}
+  .janela{width:54px; height:72px}
+  .g-linha{grid-template-columns:110px 1fr 54px}
+  .topo,main{padding-left:16px; padding-right:16px}
+}
+@media (prefers-reduced-motion: reduce){
+  *,*::before,*::after{animation-duration:.01ms !important; transition-duration:.01ms !important}
+}
+</style>
+</head>
+<body>
+
+<header class="topo">
+  <div class="marca">
+    <svg width="30" height="30" viewBox="0 0 30 30" aria-hidden="true"><rect x="2" y="3" width="26" height="23" rx="5" fill="#1B3A47"/><circle cx="15" cy="14.5" r="6.5" fill="none" stroke="#E3A62F" stroke-width="2.4"/><circle cx="15" cy="14.5" r="1.8" fill="#E3A62F"/><rect x="6" y="26" width="5" height="3" rx="1" fill="#1B3A47"/><rect x="19" y="26" width="5" height="3" rx="1" fill="#1B3A47"/></svg>
+    O código impossível
+  </div>
+  <ol class="etapas" aria-label="Etapas da atividade">
+    <li data-etapa="inicio"><span class="n">1</span>Vygotsky e a ZDP</li>
+    <li data-etapa="cofre1"><span class="n">2</span>Cofre 1</li>
+    <li data-etapa="cofre2"><span class="n">3</span>Cofre 2</li>
+    <li data-etapa="final"><span class="n">4</span>Reflexão</li>
+  </ol>
+</header>
+
+<main>
+
+<!-- =============== TELA 1: INÍCIO =============== -->
+<section class="tela" id="t-inicio" data-etapa="inicio">
+  <div class="hero">
+    <div>
+      <h1>Você consegue abrir o cofre?</h1>
+      <p class="linha-fina">Um desafio para sentir na prática a Zona de Desenvolvimento Proximal.</p>
+      <p class="lead">Uma senha secreta de quatro algarismos e seis pistas. Apenas uma combinação atende a todas elas. Primeiro você tenta sozinho. Se precisar, pede orientação. Depois, enfrenta um cofre novo, sem ajuda.</p>
+      <div class="acoes">
+        <button class="botao latao" data-ir="cofre1">Começar o desafio</button>
+        <a class="link" href="#sobre">Antes, ler sobre Vygotsky e a ZDP</a>
+      </div>
+    </div>
+    <div class="retrato">
+      <span class="fita" aria-hidden="true"></span>
+      <figure>
+        <div class="foto" id="foto-vygotsky">
+          <img src="data:image/jpeg;base64,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" alt="Retrato de Lev Semionovitch Vygotsky">'">
+        </div>
+        <figcaption>Lev S. Vygotsky<span>1896–1934 · psicólogo bielorrusso</span></figcaption>
+      </figure>
+    </div>
+  </div>
+
+  <article class="bloco" id="sobre">
+    <h2>Quem foi Vygotsky</h2>
+    <div class="texto">
+      <p>Lev Semionovitch Vygotsky nasceu em 1896, em Orsha, na atual Bielorrússia, e morreu em 1934, aos 37 anos. Em pouco mais de uma década de trabalho, formulou a <strong>perspectiva histórico-cultural</strong> do desenvolvimento humano.</p>
+      <p>Para ele, as funções psicológicas superiores (atenção voluntária, memória lógica, pensamento conceitual, linguagem) não surgem prontas nem amadurecem sozinhas. Elas se constituem nas <strong>interações sociais</strong>, mediadas pela cultura, pela linguagem e pelas outras pessoas. O que primeiro acontece entre as pessoas passa, depois, a acontecer dentro de cada uma.</p>
+      <p>Daí a importância da <strong>mediação</strong>: o professor, o colega mais experiente, uma pergunta bem feita ou uma pista no momento certo funcionam como pontes entre o que o aluno já domina e o que ainda está em formação.</p>
+    </div>
+
+    <h2 style="margin-top:34px">Três níveis para entender a ZDP</h2>
+    <div class="zdp" role="img" aria-label="Diagrama: do nível de desenvolvimento real, passando pela Zona de Desenvolvimento Proximal, até o que ainda está fora de alcance">
+      <div class="zdp-faixas">
+        <div class="f-real">
+          <h3>Desenvolvimento real</h3>
+          <p>Funções já amadurecidas. Aparece no que a pessoa resolve de forma independente.</p>
+          <span class="q">“Consigo sozinho.”</span>
+        </div>
+        <div class="f-zdp">
+          <h3>Zona de Desenvolvimento Proximal</h3>
+          <p>A distância entre o que se resolve sozinho e o que se resolve com orientação ou em colaboração com alguém mais experiente.</p>
+          <span class="q">“Consigo com ajuda.”</span>
+        </div>
+        <div class="f-alem">
+          <h3>Ainda fora de alcance</h3>
+          <p>Mesmo com ajuda, a tarefa ainda não faz sentido. A mediação aqui não encontra apoio.</p>
+          <span class="q">“Ainda não consigo.”</span>
+        </div>
+      </div>
+      <div class="zdp-eixo"><span>o que já foi construído</span><span>onde a mediação faz diferença</span><span>o que ainda está distante</span></div>
+    </div>
+    <div class="texto">
+      <p>O <strong>nível de desenvolvimento potencial</strong> é aquilo que a pessoa alcança com orientação. Para Vygotsky, o bom ensino é o que se adianta ao desenvolvimento: atua na ZDP, sobre funções que estão em processo de amadurecimento, e não apenas sobre o que já está consolidado.</p>
+      <p>Atenção: a ZDP não é simplesmente o momento em que alguém sente dificuldade. Ela é a <em>diferença</em> entre o desempenho independente e o desempenho com mediação. Por isso o desafio tem três momentos.</p>
+      <p class="ref">Referência: VYGOTSKY, L. S. <em>A formação social da mente</em>. 7. ed. São Paulo: Martins Fontes, 2007.</p>
+    </div>
+
+    <h2 style="margin-top:34px">Como o desafio funciona</h2>
+    <div class="passos">
+      <div class="passo"><h3>Sozinho</h3><p>Tente abrir o cofre 1 sem ajuda. Aqui aparece o seu nível de desenvolvimento real para este tipo de problema.</p></div>
+      <div class="passo"><h3>Com mediação</h3><p>Quando quiser, peça orientação. As pistas vêm uma de cada vez, sem entregar a resposta.</p></div>
+      <div class="passo"><h3>Sozinho de novo</h3><p>O cofre 2 tem outra senha e nenhuma orientação. Ele mostra se o raciocínio construído com ajuda passou a ser seu.</p></div>
+    </div>
+    <p class="regras"><strong>Regras dos cofres:</strong> os quatro algarismos são diferentes, o primeiro não é zero e todas as pistas são exatas. Nenhum dado pessoal é coletado: apenas tentativas, orientações e tempo, de forma anônima.</p>
+    <div style="margin-top:26px"><button class="botao latao" data-ir="cofre1">Começar o cofre 1</button></div>
+  </article>
+</section>
+
+<!-- =============== TELA 2: COFRE 1 =============== -->
+<section class="tela" id="t-cofre1" data-etapa="cofre1">
+  <div class="cab-cofre">
+    <div>
+      <h1>Cofre 1</h1>
+      <p>Quando perceber que precisa de apoio, peça ajuda.</p>
+    </div>
+    <span class="contador" id="c1-contador">0 tentativas</span>
+  </div>
+  <div class="mesa">
+    <div class="coluna-cofre" id="c1-cofre"></div>
+    <div>
+      <section class="painel mediacao" id="c1-mediacao">
+        <h2>Mediação</h2>
+        <p class="sub" id="c1-med-sub">As orientações chegam uma de cada vez, só quando você pede.</p>
+        <ol class="orientacoes" id="c1-orientacoes"></ol>
+        <div id="c1-solucao"></div>
+        <div class="acoes-med" id="c1-acoes-med">
+          <button class="botao leve" id="c1-ajuda">Preciso de ajuda</button>
+        </div>
+      </section>
+      <section class="painel">
+        <h2>Pistas</h2>
+        <p class="sub">Dadas as sequências abaixo, encontre os números corretos para abrir o cofre.</p>
+        <ol class="pistas" id="c1-pistas"></ol>
+        <div class="legenda">
+          <span><i class="pino certo"></i> dígito correto na posição certa</span>
+          <span><i class="pino lugar"></i> dígito correto em posição errada</span>
+        </div>
+      </section>
+    </div>
+  </div>
+</section>
+
+<!-- =============== TELA 3: RESULTADO COFRE 1 =============== -->
+<section class="tela" id="t-res1" data-etapa="cofre1">
+  <div class="resultado">
+    <div class="selo" id="r1-selo"></div>
+    <h1 id="r1-titulo"></h1>
+    <p class="msg" id="r1-msg"></p>
+    <p class="explica" id="r1-explica"></p>
+    <div class="escolha">
+      <div class="op principal">
+        <h2>Cofre 2, sem orientações</h2>
+        <p>Uma senha nova, sorteada só para você, com o mesmo tipo de pistas. Agora não há botão de ajuda: use o que você construiu no cofre 1.</p>
+        <button class="botao latao" data-ir="cofre2">Enfrentar o cofre 2</button>
+      </div>
+      <div class="op">
+        <h2>Ir para a reflexão</h2>
+        <p>Pular o segundo cofre e seguir para as perguntas finais e o resultado da turma.</p>
+        <button class="botao leve" data-ir="final">Ir para a reflexão</button>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- =============== TELA 4: COFRE 2 =============== -->
+<section class="tela" id="t-cofre2" data-etapa="cofre2">
+  <div class="cab-cofre">
+    <div>
+      <h1>Cofre 2</h1>
+      <p>Agora sem orientações. A senha é outra, mas o caminho de raciocínio é o mesmo. Use o que você aprendeu no cofre 1.</p>
+    </div>
+    <span class="contador" id="c2-contador">0 tentativas</span>
+  </div>
+  <div class="mesa">
+    <div class="coluna-cofre" id="c2-cofre"></div>
+    <div>
+      <section class="painel">
+        <h2>Pistas</h2>
+        <p class="sub">Mesmas regras: quatro algarismos diferentes, o primeiro não é zero, todas as pistas são exatas.</p>
+        <ol class="pistas" id="c2-pistas"></ol>
+        <div class="legenda">
+          <span><i class="pino certo"></i> dígito correto na posição certa</span>
+          <span><i class="pino lugar"></i> dígito correto em posição errada</span>
+        </div>
+      </section>
+      <section class="painel">
+        <h2>Rascunho</h2>
+        <p class="sub">Toque num dígito para marcar: descartado, depois confirmado, depois neutro.</p>
+        <div class="rascunho" id="c2-rascunho"></div>
+      </section>
+      <section class="painel">
+        <h2>Sem saída?</h2>
+        <p class="sub">Não há orientações neste cofre. Se decidir parar, a senha é revelada e você segue para a reflexão.</p>
+        <button class="botao leve" id="c2-desistir">Não consegui, revelar a senha</button>
+      </section>
+    </div>
+  </div>
+</section>
+
+<!-- =============== TELA 5: FINAL =============== -->
+<section class="tela final" id="t-final" data-etapa="final">
+  <h1>O que mudou entre um cofre e outro?</h1>
+  <div class="trajeto" id="trajeto"></div>
+
+  <div class="resultado-turma">
+    <div class="painel grafico" id="grafico-aluno">
+      <p class="sub">Resultado de todos que já fizeram o desafio.</p>
+      <div class="g-corpo">Carregando…</div>
+    </div>
+  </div>
+  <p style="margin-top:28px; text-align:center"><button class="link" id="recomecar">Reiniciar o desafio</button></p>
+</section>
+
+<!-- =============== PAINEL DA PROFESSORA (?painel) =============== -->
+<section class="tela painel-prof" id="t-painel">
+  <h1>Como a turma abriu os cofres</h1>
+  <p style="color:var(--muted)">Atualiza sozinho a cada 15 segundos. Projete esta tela ao final da atividade.</p>
+  <div class="grafico" id="grafico-painel"><div class="g-corpo">Carregando…</div></div>
+</section>
+
+</main>
+<footer>Recurso didático sobre a perspectiva histórico-cultural de Vygotsky. Os dados são anônimos e servem apenas à discussão em aula.</footer>
+
+<script>
+/* ===================== utilidades ===================== */
+const $ = (s, r = document) => r.querySelector(s);
+const $$ = (s, r = document) => [...r.querySelectorAll(s)];
+const sessao = (crypto.randomUUID ? crypto.randomUUID() : String(Date.now()) + Math.random()).slice(0, 13);
+
+function feedback(senha, tentativa) {
+  let certo = 0, lugar = 0;
+  for (let i = 0; i < 4; i++) {
+    if (senha[i] === tentativa[i]) certo++;
+    else if (senha.includes(tentativa[i])) lugar++;
+  }
+  return [certo, lugar];
+}
+// Textos que revelam a senha ficam codificados, para não aparecerem no código-fonte.
+const revela = b => new TextDecoder().decode(Uint8Array.from(atob(b), c => c.charCodeAt(0)));
+// A senha não é guardada: a resposta certa é a única combinação compatível com as seis pistas.
+const resolver = pistas => TODAS.find(c => compativel(c, pistas));
+
+function textoPista([c, l]) {
+  if (c === 1 && l === 0) return '1 correto, na posição certa';
+  if (c === 0 && l === 1) return '1 correto, em posição errada';
+  if (c === 2 && l === 0) return '2 corretos, ambos na posição certa';
+  if (c === 0 && l === 2) return '2 corretos, ambos em posições erradas';
+  if (c === 1 && l === 1) return '2 corretos: 1 na posição certa e 1 em posição errada';
+  return `${c} na posição certa, ${l} em posição errada`;
+}
+
+/* ===================== gerador do cofre 2 =====================
+   Mesmas características do cofre 1: seis pistas, cada uma com 1 ou 2
+   dígitos corretos, pelo menos uma "1 correto, na posição certa",
+   solução única e todas as seis pistas necessárias. */
+const TODAS = [];
+for (let a = 1; a < 10; a++) for (let b = 0; b < 10; b++) for (let c = 0; c < 10; c++) for (let d = 0; d < 10; d++) {
+  if (new Set([a, b, c, d]).size === 4) TODAS.push(`${a}${b}${c}${d}`);
+}
+const sorteia = arr => arr[Math.floor(Math.random() * arr.length)];
+function compativel(cod, pistas, ignorar = -1) {
+  return pistas.every((p, i) => {
+    if (i === ignorar) return true;
+    const f = feedback(cod, p.t);
+    return f[0] === p.f[0] && f[1] === p.f[1];
+  });
+}
+function gerarCofre() {
+  for (let t = 0; t < 30000; t++) {
+    const senha = sorteia(TODAS);
+    if (compativel(senha, COFRE1.pistas)) continue;
+    const pistas = [];
+    while (pistas.length < 6) {
+      const g = sorteia(TODAS);
+      if (g === senha || pistas.some(p => p.t === g)) continue;
+      const f = feedback(senha, g);
+      if (f[0] + f[1] < 1 || f[0] + f[1] > 2) continue;
+      pistas.push({ t: g, f });
+    }
+    if (!pistas.some(p => p.f[0] === 1 && p.f[1] === 0)) continue;
+    if (TODAS.filter(c => compativel(c, pistas)).length !== 1) continue;
+    let todasNecessarias = true;
+    for (let k = 0; k < 6 && todasNecessarias; k++) {
+      let n = 0;
+      for (const c of TODAS) if (compativel(c, pistas, k) && ++n > 1) break;
+      if (n < 2) todasNecessarias = false;
+    }
+    if (!todasNecessarias) continue;
+    return { pistas };
+  }
+}
+
+/* ===================== cofre 1 (fixo) ===================== */
+const COFRE1 = {
+  pistas: [['7680', [0, 2]], ['8471', [0, 1]], ['2869', [0, 1]], ['7091', [0, 2]], ['1432', [1, 0]], ['0941', [0, 1]]]
+    .map(([t, f]) => ({ t, f }))
+};
+const ORIENTACOES = [
+  { titulo: 'Orientação 1', texto: 'Compare todas as linhas. Se uma pista diz que há apenas um dígito correto, os outros três não pertencem ao código. Anote os possíveis dígitos e suas posições.', destaque: [] },
+  { titulo: 'Orientação 2', texto: 'Observe a pista 1432: exatamente um desses quatro dígitos pertence ao código e está na posição correta. Os outros três não aparecem na senha.', destaque: [4] },
+  { titulo: 'Orientação 3', texto: revela('Q29uc2lkZXJlIHNvbWVudGUgYXMgY2luY28gcHJpbWVpcmFzIHBpc3Rhcy4gRHVhcyBwb3NzaWJpbGlkYWRlcyBjb21wYXTDrXZlaXMgc8OjbyAxNTA2IGUgNTcwMi4gVXNlIGEgw7psdGltYSBwaXN0YSBwYXJhIGVsaW1pbmFyIHVtYSBkZWxhcy4='), destaque: [5] }
+];
+const SOLUCAO_HTML_COD = 'CiAgPGRpdiBjbGFzcz0ic29sdWNhbyI+CiAgICA8aDM+U29sdcOnw6NvIGV4cGxpY2FkYTwvaDM+CiAgICA8b2w+CiAgICAgIDxsaT48c3Ryb25nPk8gMCBlc3TDoSBuYSBzZW5oYT88L3N0cm9uZz4gU3Vwb25oYSBxdWUgbsOjby4gRW50w6NvIGEgcGlzdGEgNzA5MSBwcmVjaXNhIGRlIGRvaXMgY29ycmV0b3MgZW50cmUgNywgOSBlIDEuIENvbW8gMDk0MSBhZG1pdGUgc8OzIHVtIGVudHJlIDksIDQgZSAxLCBvIDcgdGVtIGRlIGVzdGFyIG5hIHNlbmhhLiBFbSA4NDcxLCBvIMO6bmljbyBjb3JyZXRvIHBhc3NhIGEgc2VyIG8gNywgZW50w6NvIDgsIDQgZSAxIHNhZW0uIFBlbGEgNzY4MCBlbnRyYSBvIDYsIGUgcGVsYSA3MDkxIGVudHJhIG8gOS4gTWFzIGHDrSAyODY5IHRlcmlhIGRvaXMgY29ycmV0b3MgKDYgZSA5KSwgZSBhIHBpc3RhIGRpeiB1bS4gQ29udHJhZGnDp8OjbzogPHN0cm9uZz5vIDAgZXN0w6EgbmEgc2VuaGE8L3N0cm9uZz4uPC9saT4KICAgICAgPGxpPkNvbSBvIDAgbmEgc2VuaGEsIGEgcGlzdGEgMDk0MSBlbGltaW5hIDksIDQgZSAxLiBQZWxhIDcwOTEsIG8gb3V0cm8gY29ycmV0byBzw7MgcG9kZSBzZXIgbyA8c3Ryb25nPjc8L3N0cm9uZz4uIFBlbGEgNzY4MCwgcXVlIGrDoSB0ZW0gNyBlIDAsIHNhZW0gbyA2IGUgbyA4LjwvbGk+CiAgICAgIDxsaT5FbSAyODY5LCBvIDgsIG8gNiBlIG8gOSBqw6Egc2HDrXJhbTogbyBjb3JyZXRvIMOpIG8gPHN0cm9uZz4yPC9zdHJvbmc+LiBFbSAxNDMyLCBvIDIgw6kgbyDDum5pY28gY29ycmV0byBlIGVzdMOhIG5hIHBvc2nDp8OjbyBjZXJ0YSwgb3Ugc2VqYSwgbmEgNMKqIHBvc2nDp8Ojby4gTyAzIHNhaS48L2xpPgogICAgICA8bGk+UG9zacOnw7VlczogbyA3IG7Do28gcG9kZSBmaWNhciBuYSAxwqogKDc2ODAsIDcwOTEpIG5lbSBuYSAzwqogKDg0NzEpLCBlbnTDo28gZmljYSBuYSA8c3Ryb25nPjLCqjwvc3Ryb25nPi4gTyAwIG7Do28gcG9kZSBmaWNhciBuYSAxwqogKDA5NDEpLCBuYSAywqogKDcwOTEpIG5lbSBuYSA0wqogKDc2ODApLCBlbnTDo28gZmljYSBuYSA8c3Ryb25nPjPCqjwvc3Ryb25nPi48L2xpPgogICAgICA8bGk+RmFsdGEgYSAxwqogcG9zacOnw6NvLiBKw6Egc2HDrXJhbSAwLCAxLCAyLCAzLCA0LCA2LCA3LCA4IGUgOS4gU8OzIHJlc3RhIG8gPHN0cm9uZz41PC9zdHJvbmc+LiBBIHNlbmhhIMOpIDxzdHJvbmc+NTcwMjwvc3Ryb25nPi48L2xpPgogICAgPC9vbD4KICA8L2Rpdj4=';
+
+/* ===================== estado ===================== */
+const estado = {
+  c1: { tentativas: 0, orientacoes: 0, viuSolucao: false, inicio: null, fim: null, resultado: null },
+  c2: { tentativas: 0, inicio: null, fim: null, resultado: null, pistas: null },
+  enviados: new Set()
+};
+
+/* ===================== componente: cofre ===================== */
+function montarCofre(alvo, { nome, pistas, aoAbrir, aoErrar }) {
+  alvo.innerHTML = `
+    <div class="cofre" aria-live="polite">
+      <div class="corpo"></div><span class="pe e"></span><span class="pe d"></span>
+      <div class="interior"><div class="brilho"></div>
+        <div class="premio"><div class="codigo"></div><div class="rotulo">cofre aberto</div></div>
+      </div>
+      <div class="porta">
+        <span class="dobradica a"></span><span class="dobradica b"></span>
+        <span class="rebite r1"></span><span class="rebite r2"></span><span class="rebite r3"></span><span class="rebite r4"></span>
+        <div class="placa">${nome}</div>
+        <div class="rodas">
+          ${[0,1,2,3].map(i => `
+            <div class="roda">
+              <button class="seta" data-i="${i}" data-d="1" aria-label="Aumentar dígito ${i+1}" tabindex="-1">
+                <svg width="16" height="10" viewBox="0 0 16 10"><path d="M2 8l6-6 6 6" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+              <div class="janela" tabindex="0" role="spinbutton" aria-valuemin="0" aria-valuemax="9" aria-label="Dígito ${i+1} da senha" data-i="${i}"><span class="dig vazio">·</span></div>
+              <button class="seta" data-i="${i}" data-d="-1" aria-label="Diminuir dígito ${i+1}" tabindex="-1">
+                <svg width="16" height="10" viewBox="0 0 16 10"><path d="M2 2l6 6 6-6" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+            </div>`).join('')}
+        </div>
+        <div class="manivela" aria-hidden="true"><i></i><i></i><i></i></div>
+      </div>
+    </div>
+    <div class="controles">
+      <button class="botao latao testar">Testar minha resposta</button>
+      <div class="aviso" role="status"></div>
+      <p class="atalho">Digite os números ou use as setas. Enter testa a senha.</p>
+    </div>`;
+
+  const cofre = $('.cofre', alvo), janelas = $$('.janela', alvo), aviso = $('.aviso', alvo), btn = $('.testar', alvo);
+  const valores = [null, null, null, null];
+  let aberto = false;
+
+  function mostra(i) {
+    const d = $('.dig', janelas[i]);
+    d.textContent = valores[i] === null ? '·' : valores[i];
+    d.classList.toggle('vazio', valores[i] === null);
+    d.classList.remove('gira'); void d.offsetWidth; d.classList.add('gira');
+    janelas[i].setAttribute('aria-valuenow', valores[i] ?? '');
+    janelas[i].setAttribute('aria-valuetext', valores[i] === null ? 'vazio' : String(valores[i]));
+  }
+  function gira(i, delta) {
+    if (aberto) return;
+    valores[i] = valores[i] === null ? (delta > 0 ? 0 : 9) : (valores[i] + delta + 10) % 10;
+    mostra(i);
+  }
+  function define(i, v) { if (aberto) return; valores[i] = v; mostra(i); }
+
+  $$('.seta', alvo).forEach(b => b.addEventListener('click', () => gira(+b.dataset.i, +b.dataset.d)));
+  janelas.forEach((j, i) => {
+    j.addEventListener('wheel', e => { e.preventDefault(); gira(i, e.deltaY < 0 ? 1 : -1); }, { passive: false });
+    j.addEventListener('click', () => j.focus());
+    j.addEventListener('keydown', e => {
+      if (/^[0-9]$/.test(e.key)) { define(i, +e.key); if (i < 3) janelas[i + 1].focus(); e.preventDefault(); }
+      else if (e.key === 'ArrowUp') { gira(i, 1); e.preventDefault(); }
+      else if (e.key === 'ArrowDown') { gira(i, -1); e.preventDefault(); }
+      else if (e.key === 'ArrowRight' && i < 3) { janelas[i + 1].focus(); e.preventDefault(); }
+      else if (e.key === 'ArrowLeft' && i > 0) { janelas[i - 1].focus(); e.preventDefault(); }
+      else if (e.key === 'Backspace') { if (valores[i] === null && i > 0) { janelas[i - 1].focus(); define(i - 1, null); } else define(i, null); e.preventDefault(); }
+      else if (e.key === 'Enter') { testar(); e.preventDefault(); }
+    });
+  });
+
+  function avisar(txt, tipo) { aviso.textContent = txt; aviso.className = `aviso on ${tipo}`; }
+
+  function testar() {
+    if (aberto) return;
+    const s = valores.map(v => v === null ? '' : v).join('');
+    if (s.length !== 4 || new Set(s).size !== 4 || s[0] === '0') {
+      avisar('Digite quatro algarismos diferentes; o primeiro não pode ser zero.', 'erro');
+      return;
+    }
+    if (compativel(s, pistas)) { abrir(s); aoAbrir && aoAbrir(); return; }
+    aoErrar && aoErrar(s);
+    avisar('Essa combinação ainda contradiz pelo menos uma das pistas. Verifique sua hipótese.', 'erro');
+    cofre.classList.remove('tranco'); void cofre.offsetWidth; cofre.classList.add('tranco');
+  }
+  btn.addEventListener('click', testar);
+
+  function abrir(codigo = resolver(pistas)) {
+    aberto = true;
+    $('.premio .codigo', alvo).textContent = codigo;
+    codigo.split('').forEach((c, i) => { valores[i] = +c; mostra(i); });
+    aviso.className = 'aviso';
+    btn.disabled = true;
+    $$('.seta', alvo).forEach(b => b.disabled = true);
+    cofre.classList.add('girando');
+    setTimeout(() => cofre.classList.add('aberto'), 650);
+  }
+  return { abrir, foco: () => janelas[0].focus(), avisar };
+}
+
+/* ===================== pistas + rascunho ===================== */
+function montarPistas(alvo, pistas) {
+  alvo.innerHTML = pistas.map((p, i) => `
+    <li class="pista" data-i="${i}">
+      <span class="tent" aria-label="Tentativa ${p.t.split('').join(' ')}">${p.t.split('').map(d => `<span data-d="${d}">${d}</span>`).join('')}</span>
+      <span class="pinos" aria-hidden="true">${'<i class="pino certo"></i>'.repeat(p.f[0])}${'<i class="pino lugar"></i>'.repeat(p.f[1])}</span>
+      <span class="txt">${textoPista(p.f)}</span>
+    </li>`).join('');
+}
+function montarRascunho(alvo, pistasEl) {
+  alvo.innerHTML = [...'0123456789'].map(d => `<button data-d="${d}" data-e="" aria-label="Dígito ${d}: sem marcação">${d}</button>`).join('');
+  const ciclo = { '': 'fora', fora: 'dentro', dentro: '' };
+  const nome = { '': 'sem marcação', fora: 'descartado', dentro: 'confirmado na senha' };
+  $$('button', alvo).forEach(b => b.addEventListener('click', () => {
+    const e = ciclo[b.dataset.e];
+    b.dataset.e = e;
+    b.setAttribute('aria-label', `Dígito ${b.dataset.d}: ${nome[e]}`);
+    $$(`.tent span[data-d="${b.dataset.d}"]`, pistasEl).forEach(s => {
+      s.classList.toggle('riscado', e === 'fora');
+      s.classList.toggle('confirmado', e === 'dentro');
+    });
+  }));
+}
+function contador(el, n) { el.textContent = `${n} ${n === 1 ? 'tentativa' : 'tentativas'}`; }
+
+/* ===================== cofre 1: montagem ===================== */
+let cofre1;
+function iniciarCofre1() {
+  if (cofre1) return;
+  estado.c1.inicio = Date.now();
+  montarPistas($('#c1-pistas'), COFRE1.pistas);
+  cofre1 = montarCofre($('#c1-cofre'), {
+    nome: 'COFRE 1', pistas: COFRE1.pistas,
+    aoErrar: () => contador($('#c1-contador'), ++estado.c1.tentativas),
+    aoAbrir: () => {
+      contador($('#c1-contador'), ++estado.c1.tentativas);
+      concluirCofre1();
+    }
+  });
+  $('#c1-ajuda').addEventListener('click', proximaOrientacao);
+}
+function proximaOrientacao() {
+  const n = estado.c1.orientacoes;
+  if (n >= ORIENTACOES.length) return;
+  const o = ORIENTACOES[n];
+  estado.c1.orientacoes++;
+  $('#c1-orientacoes').insertAdjacentHTML('beforeend', `<li class="orientacao"><strong>${o.titulo}</strong><p>${o.texto}</p></li>`);
+  $$('#c1-pistas .pista').forEach(li => li.classList.toggle('destaque', o.destaque.includes(+li.dataset.i)));
+  $('#c1-med-sub').textContent = `Você pediu ${estado.c1.orientacoes} de 3 orientações.`;
+  const acoes = $('#c1-acoes-med');
+  if (estado.c1.orientacoes < 3) {
+    acoes.innerHTML = `<button class="botao leve" id="c1-ajuda">Receber outra orientação</button>`;
+    $('#c1-ajuda').addEventListener('click', proximaOrientacao);
+  } else {
+    acoes.innerHTML = `<button class="botao leve" id="c1-ver-sol">Ver solução explicada</button>`;
+    $('#c1-ver-sol').addEventListener('click', verSolucao);
+  }
+}
+function verSolucao() {
+  estado.c1.viuSolucao = true;
+  $('#c1-solucao').innerHTML = revela(SOLUCAO_HTML_COD);
+  $('#c1-acoes-med').innerHTML = `<button class="botao latao" id="c1-abrir-sol">Abrir o cofre</button>`;
+  $('#c1-abrir-sol').addEventListener('click', () => { cofre1.abrir(); concluirCofre1(); });
+}
+function concluirCofre1() {
+  if (estado.c1.fim) return;
+  estado.c1.fim = Date.now();
+  const r = estado.c1.viuSolucao ? 'viu_solucao' : estado.c1.orientacoes > 0 ? 'com_orientacao' : 'sozinho';
+  estado.c1.resultado = r;
+  $('#c1-acoes-med').innerHTML = '';
+  const codigo1 = resolver(COFRE1.pistas);
+  $('#r1-selo').textContent = codigo1;
+  $('#r1-titulo').textContent = `O código é ${codigo1}!`;
+  $('#r1-explica').textContent = revela('TyBjw7NkaWdvIHNhdGlzZmF6IGFzIHNlaXMgcGlzdGFzLiBQb3IgZXhlbXBsbywgZW0gMTQzMiwgc29tZW50ZSBvIDIgZXN0w6EgY29ycmV0byBlIG5hIHBvc2nDp8OjbyBjZXJ0YS4gRW0gMDk0MSwgc29tZW50ZSBvIDAgZmF6IHBhcnRlIGRhIHNlbmhhLCBtYXMgZXN0w6EgZW0gcG9zacOnw6NvIGRpZmVyZW50ZS4=');
+  $('#r1-msg').textContent = r === 'sozinho'
+    ? 'Você encontrou a solução sem solicitar mediação. Neste desafio, você demonstrou uma capacidade de resolução independente.'
+    : 'Você explorou o desafio com apoio ou recebeu a solução explicada. Agora é importante verificar se consegue resolver uma nova situação sem ajuda.';
+  enviar('cofre1', {
+    resultado: r, tentativas: estado.c1.tentativas, orientacoes: estado.c1.orientacoes,
+    tempo_seg: Math.round((estado.c1.fim - estado.c1.inicio) / 1000), senha: resolver(COFRE1.pistas)
+  });
+  setTimeout(() => irPara('res1'), 2600);
+}
+
+/* ===================== cofre 2: montagem ===================== */
+let cofre2;
+function iniciarCofre2() {
+  if (cofre2) return;
+  const { pistas } = gerarCofre();
+  estado.c2.pistas = pistas;
+  estado.c2.inicio = Date.now();
+  montarPistas($('#c2-pistas'), pistas);
+  montarRascunho($('#c2-rascunho'), $('#c2-pistas'));
+  cofre2 = montarCofre($('#c2-cofre'), {
+    nome: 'COFRE 2', pistas,
+    aoErrar: () => contador($('#c2-contador'), ++estado.c2.tentativas),
+    aoAbrir: () => { contador($('#c2-contador'), ++estado.c2.tentativas); concluirCofre2('resolveu'); }
+  });
+  $('#c2-desistir').addEventListener('click', () => {
+    if (estado.c2.fim) return;
+    cofre2.abrir();
+    concluirCofre2('desistiu');
+  });
+}
+function concluirCofre2(resultado) {
+  if (estado.c2.fim) return;
+  estado.c2.fim = Date.now();
+  estado.c2.resultado = resultado;
+  $('#c2-desistir').disabled = true;
+  enviar('cofre2', {
+    resultado, tentativas: estado.c2.tentativas, orientacoes: 0,
+    tempo_seg: Math.round((estado.c2.fim - estado.c2.inicio) / 1000), senha: resolver(estado.c2.pistas)
+  });
+  setTimeout(() => irPara('final'), 2800);
+}
+
+/* ===================== tela final ===================== */
+const ROTULOS = {
+  sozinho: 'Resolveu sozinho', com_orientacao: 'Resolveu com orientação', viu_solucao: 'Viu a solução',
+  resolveu: 'Abriu sem orientações', desistiu: 'Não resolveu', nao_fez: 'Não realizado'
+};
+function montarFinal() {
+  const c1 = estado.c1, c2 = estado.c2;
+  const r1 = c1.resultado || 'nao_fez', r2 = c2.resultado || 'nao_fez';
+  const det1 = c1.resultado ? `${c1.tentativas} ${c1.tentativas === 1 ? 'tentativa' : 'tentativas'}, ${c1.orientacoes} ${c1.orientacoes === 1 ? 'orientação' : 'orientações'}` : '';
+  const det2 = c2.resultado ? `${c2.tentativas} ${c2.tentativas === 1 ? 'tentativa' : 'tentativas'}, sem orientações` : '';
+  const leitura1 = r1 === 'sozinho' ? 'Este problema já estava no seu nível de desenvolvimento real.'
+    : r1 === 'com_orientacao' ? 'Com mediação você chegou lá: o problema estava na sua ZDP.'
+    : r1 === 'viu_solucao' ? 'Mesmo com as orientações, foi preciso ver o caminho completo.' : '';
+  const leitura2 = r2 === 'resolveu' ? (r1 === 'sozinho' ? 'Você confirmou a resolução independente numa situação nova.' : 'O que antes exigiu ajuda agora você fez sozinho. Isso é o movimento que Vygotsky descreve.')
+    : r2 === 'desistiu' ? 'A transferência ainda não se completou. Talvez seja preciso mais mediação, e isso também é informação.'
+    : 'Você optou por não fazer o segundo cofre.';
+  $('#trajeto').innerHTML = `
+    <div><span class="t">Cofre 1, primeiro momento</span><h3>Tentativa independente</h3>
+      <span class="v ${r1 === 'sozinho' ? 'sozinho' : 'com_orientacao'}">${r1 === 'sozinho' ? 'Abriu sem ajuda' : 'Pediu mediação'}</span>
+      <p>${r1 === 'sozinho' ? 'Você não precisou pedir orientação.' : 'Em algum momento, você percebeu que precisava de apoio.'}</p></div>
+    <div><span class="t">Cofre 1, com mediação</span><h3>Desempenho com ajuda</h3>
+      <span class="v ${r1}">${ROTULOS[r1]}</span><p>${det1}. ${leitura1}</p></div>
+    <div><span class="t">Cofre 2, sem orientações</span><h3>Transferência</h3>
+      <span class="v ${r2}">${ROTULOS[r2]}</span><p>${det2 ? det2 + '. ' : ''}${leitura2}</p></div>`;
+  carregarGrafico($('#grafico-aluno .g-corpo'));
+}
+$('#recomecar').addEventListener('click', () => location.reload());
+
+/* ===================== dados: envio e gráfico ===================== */
+function enviar(etapa, dados) {
+  if (estado.enviados.has(etapa)) return;
+  estado.enviados.add(etapa);
+  if (!CONFIG.URL_PLANILHA) return;
+  fetch(CONFIG.URL_PLANILHA, {
+    method: 'POST', mode: 'no-cors',
+    headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+    body: JSON.stringify({ sessao, etapa, ...dados })
+  }).catch(() => {});
+}
+const EXEMPLO = {
+  total: 24,
+  cofre1: { sozinho: 5, com_orientacao: 14, viu_solucao: 5 },
+  cofre2: { resolveu: 13, desistiu: 6 },
+  mediados_no_cofre2: 15, mediados_resolveram: 10
+};
+async function buscarResumo() {
+  if (!CONFIG.URL_PLANILHA) return { ...EXEMPLO, exemplo: true };
+  const r = await fetch(CONFIG.URL_PLANILHA + '?acao=resumo&t=' + Date.now());
+  if (!r.ok) throw new Error('falha');
+  return await r.json();
+}
+function grupoBarras(titulo, dados, chaves) {
+  const total = chaves.reduce((s, k) => s + (dados[k] || 0), 0);
+  return `<div class="g-grupo"><h3>${titulo}</h3>${chaves.map(k => {
+    const n = dados[k] || 0, pct = total ? Math.round(n / total * 100) : 0;
+    return `<div class="g-linha ${k}"><span>${ROTULOS[k]}</span>
+      <span class="g-trilho"><span class="g-barra ${k}" data-w="${pct}"></span></span>
+      <span class="g-num">${n} <small style="font-weight:400;color:var(--muted)">(${pct}%)</small></span></div>`;
+  }).join('')}</div>`;
+}
+async function carregarGrafico(el) {
+  try {
+    const d = await buscarResumo();
+    const pct = d.mediados_no_cofre2 ? Math.round(d.mediados_resolveram / d.mediados_no_cofre2 * 100) : 0;
+    el.innerHTML = `
+      ${d.exemplo ? '<p class="g-aviso" style="margin-top:0">Dados de exemplo <span class="selo-exemplo">planilha ainda não conectada</span></p>' : `<p class="g-aviso" style="margin-top:0">${d.total} ${d.total === 1 ? 'participação' : 'participações'} até agora.</p>`}
+      ${grupoBarras('Cofre 1', d.cofre1, ['com_orientacao', 'sozinho', 'viu_solucao'])}
+      ${grupoBarras('Cofre 2, sem orientações', d.cofre2, ['resolveu', 'desistiu'])}
+      <div class="g-destaque">${d.mediados_no_cofre2
+        ? `Dos que precisaram de mediação no cofre 1 e tentaram o cofre 2, <strong>${d.mediados_resolveram} de ${d.mediados_no_cofre2}</strong> (${pct}%) abriram o segundo cofre sozinhos.`
+        : 'Quando houver quem precisou de mediação no cofre 1 e tentou o cofre 2, aparece aqui quantos abriram o segundo sozinhos.'}</div>`;
+    requestAnimationFrame(() => requestAnimationFrame(() => $$('.g-barra', el).forEach(b => b.style.width = b.dataset.w + '%')));
+  } catch {
+    el.innerHTML = '<p class="g-aviso">Não foi possível carregar o resultado da turma agora. Verifique a conexão e recarregue a página.</p>';
+  }
+}
+
+/* ===================== navegação ===================== */
+const ORDEM = ['inicio', 'cofre1', 'cofre2', 'final'];
+function irPara(id) {
+  $$('.tela').forEach(t => t.classList.remove('ativa'));
+  const tela = $('#t-' + id);
+  tela.classList.add('ativa');
+  const etapa = tela.dataset.etapa;
+  const idx = ORDEM.indexOf(etapa);
+  $$('.etapas li').forEach(li => {
+    const i = ORDEM.indexOf(li.dataset.etapa);
+    li.classList.toggle('atual', i === idx);
+    li.classList.toggle('feita', i < idx);
+    if (i === idx) li.setAttribute('aria-current', 'step'); else li.removeAttribute('aria-current');
+  });
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+  if (id === 'cofre1') { iniciarCofre1(); setTimeout(() => cofre1 && cofre1.foco(), 350); }
+  if (id === 'cofre2') { iniciarCofre2(); setTimeout(() => cofre2 && cofre2.foco(), 350); }
+  if (id === 'final') montarFinal();
+}
+$$('[data-ir]').forEach(b => b.addEventListener('click', () => irPara(b.dataset.ir)));
+
+if (new URLSearchParams(location.search).has('painel')) {
+  document.body.classList.add('modo-painel');
+  $('#t-painel').classList.add('ativa');
+  const atualizar = () => carregarGrafico($('#grafico-painel .g-corpo'));
+  atualizar(); setInterval(atualizar, 15000);
+} else {
+  irPara('inicio');
+}
+</script>
+</body>
+</html>
